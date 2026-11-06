@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f6b57">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ذکرشمار">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<title>ذکرشمار</title>
+<style>
+:root{--bg:#eef3ef;--surface:rgba(251,253,251,.88);--ink:#14332b;--muted:#4f6d62;--accent:#0f6b57;--accent-d:#0a4f40;--line:#c4d6cc;--warn:#b3261e;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1a16;--surface:rgba(21,38,31,.86);--ink:#e6f1ec;--muted:#9bbcaf;--accent:#34b393;--accent-d:#2a9279;--line:#2c4a41;--warn:#ff8a80}}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*{box-sizing:border-box}
+body{margin:0;min-height:100%;color:var(--ink);font-family:"Vazirmatn","Vazir",Tahoma,sans-serif}
+#bg{position:fixed;inset:0;background:var(--bg);z-index:-1}
+main{min-height:100vh;max-width:480px;margin:0 auto;padding:16px 18px 24px;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:14px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 14px}
+.top h1{margin:0;font-size:1.2rem}
+.top div{display:flex;gap:6px}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.btn{background:transparent;border:1.5px solid var(--line);border-radius:10px;padding:8px 12px;font-size:.9rem}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.btn.warn{border-color:var(--warn);color:var(--warn);font-weight:700}
+label{display:block;color:var(--muted);font-size:.9rem;margin-bottom:8px}
+.field{position:relative}
+#zekr{width:100%;font:inherit;font-size:1.3rem;text-align:center;padding:14px 44px;border:1.5px solid var(--line);border-radius:12px;background:transparent;color:var(--ink)}
+#clear{position:absolute;inset-inline-start:6px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:0;border-radius:50%;background:transparent;font-size:1.3rem;color:var(--muted)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.mid{flex:1;display:flex;align-items:center;justify-content:center;min-height:220px}
+#tap{width:200px;height:200px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:1.6rem;font-weight:700;box-shadow:0 0 0 12px rgba(255,255,255,.28);transition:transform .08s,background .15s}
+#tap:active{transform:scale(.94);background:var(--accent-d)}
+.total{text-align:center}
+.total small{color:var(--muted)}
+#count{display:block;font-size:3.4rem;font-weight:800;line-height:1.2;font-variant-numeric:tabular-nums}
+.row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:5}
+.sheet{position:fixed;inset-inline:0;bottom:0;max-width:480px;margin:0 auto;max-height:82vh;overflow:auto;background:var(--bg);border-radius:20px 20px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom,0px));display:none;z-index:6}
+.open{display:block}
+.sheet h2{margin:0 0 12px;font-size:1.1rem;display:flex;justify-content:space-between;align-items:center}
+.item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.item .info{flex:1;min-width:0}
+.item .t{font-weight:700;overflow-wrap:anywhere}
+.item .d{font-size:.82rem;color:var(--muted)}
+.item .c{font-size:1.3rem;font-weight:800;color:var(--accent)}
+.item button{border:0;background:transparent;color:var(--muted);font-size:1.1rem;padding:6px}
+.empty{color:var(--muted);text-align:center;padding:24px 0}
+.sum{color:var(--muted);font-size:.9rem;margin-bottom:6px}
+.sw{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0 14px}
+.sw button{width:48px;height:48px;border-radius:50%;border:2px solid var(--line)}
+#toast{position:fixed;inset-inline:0;bottom:calc(24px + env(safe-area-inset-bottom,0px));margin:0 auto;width:max-content;max-width:90%;background:#14332b;color:#fff;padding:10px 16px;border-radius:12px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9}
+#toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){#tap,#toast{transition:none}}
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<main>
+  <div class="card top">
+    <h1>ذکرشمار</h1>
+    <div>
+      <button class="btn" id="openHist" type="button">تاریخچه</button>
+      <button class="btn" id="openBg" type="button">پس‌زمینه</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <label for="zekr">ذکر</label>
+    <div class="field">
+      <input id="zekr" type="text" placeholder="ذکر خود را بنویسید" autocomplete="off">
+      <button id="clear" type="button" aria-label="پاک کردن ذکر">×</button>
+    </div>
+  </div>
+
+  <div class="mid"><button id="tap" type="button">بگو</button></div>
+
+  <div class="card total">
+    <small>جمع کل</small>
+    <span id="count">۰</span>
+    <div class="row">
+      <button class="btn primary" id="saveBtn" type="button">ذخیره در تاریخچه</button>
+      <button class="btn" id="reset" type="button">صفر کردن</button>
+    </div>
+  </div>
+</main>
+
+<div class="backdrop" id="backdrop"></div>
+
+<section class="sheet" id="histSheet" aria-label="تاریخچه">
+  <h2>تاریخچه <button class="btn" data-close type="button">بستن</button></h2>
+  <div class="sum" id="histSum"></div>
+  <div id="histList"></div>
+  <div class="row"><button class="btn" id="histClear" type="button">پاک کردن همه تاریخچه</button></div>
+</section>
+
+<section class="sheet" id="bgSheet" aria-label="پس‌زمینه">
+  <h2>پس‌زمینه <button class="btn" data-close type="button">بستن</button></h2>
+  <div class="sw" id="swatches"></div>
+  <div class="row">
+    <button class="btn primary" id="pick" type="button">انتخاب عکس از گوشی</button>
+    <button class="btn" id="bgNone" type="button">حذف پس‌زمینه</button>
+  </div>
+  <input type="file" id="file" accept="image/*" hidden>
+</section>
+
+<div id="toast" role="status"></div>
+
+<script>
+var $=function(i){return document.getElementById(i)};
+var fnum=new Intl.NumberFormat('fa-IR');
+var fdate=new Intl.DateTimeFormat('fa-IR',{dateStyle:'medium',timeStyle:'short'});
+function toast(m){var t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(function(){t.classList.remove('show')},2200)}
+function load(k,d){try{var v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast('ذخیره‌سازی در دسترس نیست')}}
+
+var n=load('zk2-n',0), text=load('zk2-t','اللهم صل علی محمد و آل محمد'), hist=load('zk2-h',[]), bg=load('zk2-bg',null);
+
+/* دکمه‌ای که با دو بار زدن اجرا می‌شود (بدون پنجره تأیید مرورگر) */
+function arm(btn,msg,fn){var orig=btn.textContent,t=null;
+  btn.onclick=function(){
+    if(t){clearTimeout(t);t=null;btn.textContent=orig;btn.classList.remove('warn');fn()}
+    else{btn.textContent=msg;btn.classList.add('warn');t=setTimeout(function(){t=null;btn.textContent=orig;btn.classList.remove('warn')},3000)}
+  }}
+
+/* شمارنده */
+function render(){$('count').textContent=fnum.format(n);save('zk2-n',n)}
+$('tap').onclick=function(){n++;render();if(navigator.vibrate)navigator.vibrate(15)};
+arm($('reset'),'مطمئنی؟ دوباره بزن',function(){n=0;render();toast('صفر شد')});
+
+/* ذکر */
+var z=$('zekr');z.value=text;
+function syncClear(){$('clear').style.display=z.value?'block':'none'}
+z.oninput=function(){text=z.value;save('zk2-t',text);syncClear()};
+$('clear').onclick=function(){z.value='';text='';save('zk2-t','');syncClear();z.focus()};
+syncClear();
+
+/* تاریخچه */
+$('saveBtn').onclick=function(){
+  if(n===0){toast('هنوز ذکری نگفته‌اید');return}
+  hist.unshift({id:Date.now(),t:z.value.trim()||'بدون عنوان',c:n,d:new Date().toISOString()});
+  save('zk2-h',hist);n=0;render();toast('در تاریخچه ذخیره شد')};
+function renderHist(){
+  var box=$('histList');box.textContent='';var sum=0;
+  if(!hist.length){var e=document.createElement('div');e.className='empty';e.textContent='هنوز چیزی ذخیره نشده است.';box.appendChild(e)}
+  hist.forEach(function(h){
+    sum+=h.c;
+    var r=document.createElement('div');r.className='item';
+    var i=document.createElement('div');i.className='info';
+    var t=document.createElement('div');t.className='t';t.textContent=h.t;
+    var d=document.createElement('div');d.className='d';d.textContent=fdate.format(new Date(h.d));
+    i.appendChild(t);i.appendChild(d);
+    var c=document.createElement('div');c.className='c';c.textContent=fnum.format(h.c);
+    var x=document.createElement('button');x.type='button';x.textContent='✕';x.setAttribute('aria-label','حذف');
+    x.onclick=function(){hist=hist.filter(function(a){return a.id!==h.id});save('zk2-h',hist);renderHist()};
+    r.appendChild(i);r.appendChild(c);r.appendChild(x);box.appendChild(r)});
+  $('histSum').textContent=hist.length?'مجموع همه: '+fnum.format(sum):'';
+  $('histClear').style.display=hist.length?'':'none'}
+arm($('histClear'),'مطمئنی؟ دوباره بزن',function(){hist=[];save('zk2-h',hist);renderHist()});
+
+/* پنجره‌ها */
+function openSheet(id){$('backdrop').style.display='block';$(id).classList.add('open')}
+function closeAll(){$('backdrop').style.display='none';$('histSheet').classList.remove('open');$('bgSheet').classList.remove('open')}
+$('openHist').onclick=function(){renderHist();openSheet('histSheet')};
+$('openBg').onclick=function(){openSheet('bgSheet')};
+$('backdrop').onclick=closeAll;
+document.querySelectorAll('[data-close]').forEach(function(b){b.onclick=closeAll});
+
+/* پس‌زمینه */
+var presets=['linear-gradient(160deg,#0f6b57,#1b3a5c)','linear-gradient(160deg,#f6d365,#fda085)','linear-gradient(160deg,#667eea,#764ba2)','linear-gradient(160deg,#134e5e,#71b280)','linear-gradient(160deg,#232526,#414345)','linear-gradient(160deg,#ffecd2,#fcb69f)','linear-gradient(160deg,#89f7fe,#66a6ff)','linear-gradient(160deg,#fbc2eb,#a6c1ee)'];
+function applyBg(){var el=$('bg');
+  if(!bg){el.style.background='';return}
+  if(bg.type==='p')el.style.background=presets[bg.i];
+  else el.style.background='url("'+bg.data+'") center/cover no-repeat'}
+presets.forEach(function(p,i){var b=document.createElement('button');b.type='button';b.style.background=p;b.setAttribute('aria-label','پس‌زمینه '+(i+1));
+  b.onclick=function(){bg={type:'p',i:i};save('zk2-bg',bg);applyBg()};$('swatches').appendChild(b)});
+$('bgNone').onclick=function(){bg=null;save('zk2-bg',null);applyBg()};
+$('pick').onclick=function(){$('file').click()};
+$('file').onchange=function(e){
+  var f=e.target.files[0];if(!f)return;
+  var fr=new FileReader();
+  fr.onload=function(){var im=new Image();
+    im.onload=function(){
+      var m=1200,s=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement('canvas');
+      c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);
+      c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+      bg={type:'i',data:c.toDataURL('image/jpeg',0.7)};save('zk2-bg',bg);applyBg();toast('پس‌زمینه تغییر کرد')};
+    im.onerror=function(){toast('این عکس باز نشد')};
+    im.src=fr.result};
+  fr.readAsDataURL(f);e.target.value=''};
+
+render();applyBg();
+if('serviceWorker' in navigator){try{navigator.serviceWorker.register('sw.js').catch(function(){})}catch(e){}}
+</script>
+</body>
+</html>
